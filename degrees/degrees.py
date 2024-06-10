@@ -92,31 +92,53 @@ def shortest_path(source, target):
     If no possible path, returns None.
     """
 
-    visited = {}
 
     print("ID's - ")
     print(source)
     print(target)
-    print(people[source])
-    pairs = neighbors_for_person(source)
 
-    for movie, person in pairs:
-        if (target == person):
-            print("Found")
-            print(movie)
-            print(person)
-            return [(movie, person)]
+    #initializing the start node and frontier to start the search algorithm 
 
-    
+    path = []
+    start_node = Node(person=source, parent=None, movie=None)
+    frontier = QueueFrontier()
+    frontier.add(start_node)
+    visited = set()
+
+    while True:
+        if frontier.empty():
+            return None
+        
+        node = frontier.remove()
+        pairs = neighbors_for_person(node.person)
+
+        for movie, person in pairs:
+            if person == target:
+                path_node = Node(person=person, parent=node, movie=movie)
+                while path_node.parent is not None:
+                    path.append((path_node.movie, path_node.person))
+                    path_node = path_node.parent
+                print(path)
+                return path
+                       
+            # creating a new node and adding it to the frontier
+
+            new_node = Node(person=person, parent=node, movie=movie)
+            if new_node not in visited:
+                frontier.add(new_node)
+                visited.add(new_node)
+            else:
+                continue
+            
 
     # TODO
     raise NotImplementedError
 
 class Node():
-    def __init__(self, state, parent, action):
-        self.state = state
+    def __init__(self, person, parent, movie):
+        self.person = person
         self.parent = parent
-        self.action = action
+        self.movie = movie
 
 
 class StackFrontier():
