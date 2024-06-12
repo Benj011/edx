@@ -93,10 +93,6 @@ def shortest_path(source, target):
     """
 
 
-    print("ID's - ")
-    print(source)
-    print(target)
-
     #initializing the start node and frontier to start the search algorithm 
 
     path = []
@@ -104,6 +100,9 @@ def shortest_path(source, target):
     frontier = QueueFrontier()
     frontier.add(start_node)
     visited = set()
+
+    if source == target:
+        return path
 
     while True:
         if frontier.empty():
@@ -118,15 +117,15 @@ def shortest_path(source, target):
                 while path_node.parent is not None:
                     path.append((path_node.movie, path_node.person))
                     path_node = path_node.parent
-                print(path)
+                path.reverse()
                 return path
                        
             # creating a new node and adding it to the frontier
 
-            new_node = Node(person=person, parent=node, movie=movie)
-            if new_node not in visited:
+            if person not in visited:
+                new_node = Node(person=person, parent=node, movie=movie)
                 frontier.add(new_node)
-                visited.add(new_node)
+                visited.add(new_node.person)
             else:
                 continue
             
