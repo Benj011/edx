@@ -156,24 +156,35 @@ def minimax(board):
         return None
 
     if player(board) == X:
-        rating = -math.inf
+        actionScore = -math.inf
         bestAction = None
         for action in actions(board):
-            actionScore = minimax(result(board, action))
-            if actionScore > rating:
-                rating = actionScore
-                bestAction = action
-        return bestAction
+            score 
     else:
-        rating = math.inf
+        actionScore = math.inf
         bestAction = None
-        for action in actions(board):
-            actionScore = minimax(result(board, action))
-            if actionScore < rating:
-                rating = actionScore
-                bestAction = action
-        return bestAction
     
+
+    raise NotImplementedError
+
+def maximize(board):
+    """
+    Returns the action that maximizes the score
+    """
+
+    if winner(board) == X:
+        return None
+
+    for action in actions(board):
+        if utility(result(board, action)) == 1:
+            return action
+
     
+    raise NotImplementedError
+
+def minimize(board):
+    """
+    Returns the action that minimizes the score
+    """
 
     raise NotImplementedError
