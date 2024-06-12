@@ -112,6 +112,9 @@ def terminal(board):
     Returns True if game is over, False otherwise.
     """
 
+    if board == initial_state():
+        return False
+
     if winner(board) != None:
         return True
     
