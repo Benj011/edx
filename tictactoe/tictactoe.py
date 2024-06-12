@@ -48,14 +48,14 @@ def actions(board):
     Returns set of all possible actions (i, j) available on the board.
     """
 
-    possibleActions = ()
+    possibleActions = []
 
     for i in range(3):
         for j in range(3):
             if board[i][j] == EMPTY:
-                possibleActions.append(i, j)
+                possibleActions.append((i, j))
 
-    return possibleActions
+    return set(possibleActions)
 
     raise NotImplementedError
 
@@ -64,6 +64,10 @@ def result(board, action):
     """
     Returns the board that results from making move (i, j) on the board.
     """
+
+    for num in action:
+        if num < 0 or num > 2 :
+            raise Exception
 
     if board[action[0]][action[1]] != EMPTY:
         raise Exception("Invalid move")
@@ -117,8 +121,13 @@ def terminal(board):
 
     if winner(board) != None:
         return True
+
+    for row in board:
+        if EMPTY in row:
+            return False
     
-    return all("EMPTY" not in row for row in board)
+    
+    return True
 
     raise NotImplementedError
 
@@ -144,7 +153,7 @@ def minimax(board):
     """
 
     if terminal(board) == True:
-        return utility(board)
+        return None
 
     if player(board) == X:
         rating = -math.inf
