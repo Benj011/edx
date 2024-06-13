@@ -3,6 +3,7 @@ Tic Tac Toe Player
 """
 
 import math
+import copy
 
 X = "X"
 O = "O"
@@ -73,7 +74,7 @@ def result(board, action):
         raise Exception("Invalid move")
     
     # might need to deep copy the board idk yet
-    newBoard = board.copy()
+    newBoard = copy.deepcopy(board)
 
     newBoard[action[0]][action[1]] = player(board)
 
@@ -152,39 +153,60 @@ def minimax(board):
     Returns the optimal action for the current player on the board.
     """
 
-    if terminal(board) == True:
+    if terminal(board):
         return None
 
     if player(board) == X:
-        actionScore = -math.inf
-        bestAction = None
+        bestValue = -math.inf
         for action in actions(board):
-            score 
+            value = minimizer(result(board, action))
+            if value > bestValue:
+                bestValue = value
+                bestAction = action
     else:
-        actionScore = math.inf
-        bestAction = None
-    
-
+        bestValue = math.inf
+        for action in actions(board):
+            value = maximizer(result(board, action))
+            if value < bestValue:
+                bestValue = value
+                bestAction = action
+                
+    return bestAction
     raise NotImplementedError
 
-def maximize(board):
+
+
+
+def maximizer(board):
     """
-    Returns the action that maximizes the score
+    Returns the optimal action for the current player on the board.
     """
 
-    if winner(board) == X:
-        return None
-
+    if terminal(board):
+        return utility(board)
+    
+    v = -math.inf
     for action in actions(board):
-        if utility(result(board, action)) == 1:
-            return action
+        v = max(v, minimizer(result(board, action)))
 
-    
+    return v
+
     raise NotImplementedError
 
-def minimize(board):
+
+
+def minimizer(board):
     """
-    Returns the action that minimizes the score
+    Returns the optimal action for the current player on the board.
     """
+    if terminal(board):
+        return utility(board)
+    
+    v = math.inf
+    for action in actions(board):
+        v = min(v, maximizer(result(board, action)))
+
+    return v
+
 
     raise NotImplementedError
