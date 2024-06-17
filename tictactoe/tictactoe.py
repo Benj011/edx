@@ -170,7 +170,7 @@ def minimax(board):
             if value < bestValue:
                 bestValue = value
                 bestAction = action
-                
+
     return bestAction
     raise NotImplementedError
 
@@ -185,11 +185,11 @@ def maximizer(board):
     if terminal(board):
         return utility(board)
     
-    v = -math.inf
+    value = -math.inf
     for action in actions(board):
-        v = max(v, minimizer(result(board, action)))
+        value = max(value, minimizer(result(board, action)))
 
-    return v
+    return value
 
     raise NotImplementedError
 
@@ -202,11 +202,11 @@ def minimizer(board):
     if terminal(board):
         return utility(board)
     
-    v = math.inf
+    value = math.inf
     for action in actions(board):
-        v = min(v, maximizer(result(board, action)))
+        value = min(value, maximizer(result(board, action)))
 
-    return v
+    return value
 
 
     raise NotImplementedError
