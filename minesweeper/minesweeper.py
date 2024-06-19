@@ -188,6 +188,8 @@ class MinesweeperAI():
         for sentence in self.knowledge:
             sentence.mark_mine(cell)
 
+        return
+
     def mark_safe(self, cell):
         """
         Marks a cell as safe, and updates all knowledge
@@ -196,6 +198,8 @@ class MinesweeperAI():
         self.safes.add(cell)
         for sentence in self.knowledge:
             sentence.mark_safe(cell)
+
+        return
 
     def add_knowledge(self, cell, count):
         """
@@ -212,12 +216,54 @@ class MinesweeperAI():
             5) add any new sentences to the AI's knowledge base
                if they can be inferred from existing knowledge
         """
-        print("TESTING")
-        print(cell) #problem is that cell is turning into a set that is massive somehow
+
+        print("Start of add knowlege")
+        print(cell)
         self.moves_made.add(cell)
         self.mark_safe(cell)
+
+        # going through the knowledge base and changing the sentences that hold the cell
+
+        for sentence in self.knowledge:
+            if cell in sentence.cells:
+                sentence.mark_safe(cell)
+
+
+        if count == 0:
+
+            i = cell[0]
+            j = cell[1]
+
+            # checking the cells around the cell that was clicked on
+
+            # checking i - 1
+            if i - 1 >= 0 and j - 1 >= 0:
+                self.mark_safe((i - 1, j - 1))
+            if i - 1 >= 0:
+                self.mark_safe((i - 1, j))
+            if i - 1 >= 0 and j + 1 < self.width:
+                self.mark_safe((i - 1, j + 1))
+
+            # checking i
+            if j - 1 >= 0:
+                self.mark_safe((i, j - 1))
+            if j + 1 < self.width:
+                self.mark_safe((i, j + 1))
+
+            # checking i + 1
+            if i + 1 < self.height and j - 1 >= 0:
+                self.mark_safe((i + 1, j - 1))
+            if i + 1 < self.height:
+                self.mark_safe((i + 1, j))
+            if i + 1 < self.height and j + 1 < self.width:
+                self.mark_safe((i + 1, j + 1))
+                
+                
+
+
         Sentence_cells = set()
 
+        print("Start of Sentence_cells")
         # iterating through every cell and deeing if they have already 
         # been marked or moved to
 
@@ -235,18 +281,53 @@ class MinesweeperAI():
 
         # making a new sentence with new info
 
+        print("Start of new sentence")
+
         new_sentence = Sentence(Sentence_cells, count) 
         self.knowledge.append(new_sentence)
 
 
         # going through the knowledge base and checking each sentence for sure mines and safes
+        print("Start of checking for mines and safes")
+        safes_to_mark = set()
+        mines_to_mark = set()
+
         for sentence in self.knowledge:
             if sentence.count == 0:
                 for cell in sentence.cells:
-                    self.mark_safe(cell)
+                    safes_to_mark.add(cell)
             elif sentence.count == len(sentence.cells):
                 for cell in sentence.cells:
-                    self.mark_mine(cell)
+                    mines_to_mark.add(cell)
+
+        # now adding to self.knowledge becuase im not iterating over it    
+        print("Start of marking safes and mines")
+        for cell in safes_to_mark:
+            self.mark_safe(cell)
+        for cell in mines_to_mark:
+            self.mark_mine(cell)
+
+        # subset method now
+        print("Start of subset method")
+
+        sentencesToAdd = []
+
+        for sentence1 in self.knowledge:
+            for sentence2 in self.knowledge:
+                if sentence1 == sentence2:
+                    continue
+                if sentence1.cells.issubset(sentence2.cells):
+                    new_sentence = Sentence(sentence2.cells - sentence1.cells, sentence2.count - sentence1.count)
+                    if new_sentence in sentencesToAdd:
+                        continue
+                    else:
+                        sentencesToAdd.append(new_sentence)
+                    
+        for sentence in sentencesToAdd:
+            self.knowledge.append(sentence)        
+        
+        print("End of add knowlege")
+        return
 
         raise NotImplementedError
 
@@ -278,16 +359,31 @@ class MinesweeperAI():
 
         random_moves = []
 
-        for i in range(self.height - 1):
-            for j in range(self.width - 1):
-                if (i,j) in self.mines or (i,j) in self.moves_made:
-                    continue
-                else:
-                    random_moves.append((i,j))
+        # making a random move from neighbors of cells that have been clicked on
 
-        if len(random_moves) == 0:
-            return None
+        if len(self.moves_made) != 0:
+            for cell in self.moves_made:
+                i = cell[0]
+                j = cell[1]
+                for x in range(i - 1, i + 2):
+                    for y in range(j - 1, j + 2):
+                        if x >= 0 and y >= 0 and x < self.height and y < self.width:
+                            if (x,y) not in self.moves_made and (x,y) not in self.mines:
+                                random_moves.append((x,y))
+
+        else:
+            return (random.randint(0, self.height - 1), random.randint(0, self.width - 1))
         
-        return random.choice(random_moves)
+        while True:
+            random_int = random.randint(0, len(random_moves) - 1)
+            if random_moves[random_int] not in self.moves_made and random_moves[random_int] not in self.mines:
+                break
+            else:
+                random_moves.remove(random_moves[random_int])
+
+        return random_moves[random_int]
 
         raise NotImplementedError
+
+
+# current problems is that i am adding cells wrong somehow
