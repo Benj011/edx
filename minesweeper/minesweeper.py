@@ -232,7 +232,12 @@ class MinesweeperAI():
                 else:
                     Sentence_cells.add((i,j))
 
-        self.add_knowledge(Sentence_cells, count)
+
+        # making a new sentence with new info
+
+        new_sentence = Sentence(Sentence_cells, count) 
+        self.knowledge.append(new_sentence)
+
 
         # going through the knowledge base and checking each sentence for sure mines and safes
         for sentence in self.knowledge:
@@ -271,11 +276,18 @@ class MinesweeperAI():
             2) are not known to be mines
         """
 
+        random_moves = []
+
         for i in range(self.height - 1):
             for j in range(self.width - 1):
                 if (i,j) in self.mines or (i,j) in self.moves_made:
                     continue
                 else:
-                    return (i,j)
+                    random_moves.append((i,j))
+
+        if len(random_moves) == 0:
+            return None
+        
+        return random.choice(random_moves)
 
         raise NotImplementedError
