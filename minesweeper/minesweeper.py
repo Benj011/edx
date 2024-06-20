@@ -219,6 +219,7 @@ class MinesweeperAI():
 
         print("Start of add knowlege")
         print(cell)
+        print(self.safes)
         self.moves_made.add(cell)
         self.mark_safe(cell)
 
@@ -228,13 +229,14 @@ class MinesweeperAI():
             if cell in sentence.cells:
                 sentence.mark_safe(cell)
 
+        # problem is under this ______________________________________________________________
 
         if count == 0:
 
             i = cell[0]
             j = cell[1]
 
-            # checking the cells around the cell that was clicked on
+            # checking the cells around the cell that was clicked on problem is when i get a zero square itmarks a ton of random squares as safe
 
             # checking i - 1
             if i - 1 >= 0 and j - 1 >= 0:
@@ -259,11 +261,10 @@ class MinesweeperAI():
                 self.mark_safe((i + 1, j + 1))
                 
                 
-
+        print(self.safes)
 
         Sentence_cells = set()
 
-        print("Start of Sentence_cells")
         # iterating through every cell and deeing if they have already 
         # been marked or moved to
 
@@ -281,14 +282,12 @@ class MinesweeperAI():
 
         # making a new sentence with new info
 
-        print("Start of new sentence")
 
         new_sentence = Sentence(Sentence_cells, count) 
         self.knowledge.append(new_sentence)
 
 
         # going through the knowledge base and checking each sentence for sure mines and safes
-        print("Start of checking for mines and safes")
         safes_to_mark = set()
         mines_to_mark = set()
 
@@ -301,14 +300,12 @@ class MinesweeperAI():
                     mines_to_mark.add(cell)
 
         # now adding to self.knowledge becuase im not iterating over it    
-        print("Start of marking safes and mines")
         for cell in safes_to_mark:
             self.mark_safe(cell)
         for cell in mines_to_mark:
             self.mark_mine(cell)
 
         # subset method now
-        print("Start of subset method")
 
         sentencesToAdd = []
 
@@ -327,6 +324,7 @@ class MinesweeperAI():
             self.knowledge.append(sentence)        
         
         print("End of add knowlege")
+        print(self.safes)
         return
 
         raise NotImplementedError
