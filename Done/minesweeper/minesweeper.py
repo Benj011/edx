@@ -269,11 +269,6 @@ class MinesweeperAI():
             if len(sentence.cells) == 0:
                 self.knowledge.remove(sentence)
 
-        self.makeInference()
-
-        self.makeConclusions()
-
-        self.doubleCheck()
 
         print(cell)
         print(self.safes)
@@ -403,41 +398,3 @@ class MinesweeperAI():
 
 
     
-    def doubleCheck(self):
-        
-        # i iterate through the knowledge base and make new sentences
-
-        print("double check")
-
-        cellsToRemove = set()
-
-        for cell in self.mines:
-            if(cell in self.safes):
-                cellsToRemove.add(cell)
-
-        for cell in cellsToRemove:
-            self.safes.remove(cell)
-
-        newSentences = []
-        mines = set()
-        nonMines = set()
-
-        for sentence in self.knowledge:
-            for cell in sentence.cells:
-                if cell in self.mines:
-                    sentence.mark_mine(cell)
-                    mines.add(cell)
-                    continue
-
-                elif cell in self.safes:
-                    continue
-
-                else :
-                    nonMines.add(cell)
-
-
-            newSentences.append(Sentence(nonMines, sentence.count - len(mines)))
-
-        self.knowledge.extend(newSentences)
-
-        return
