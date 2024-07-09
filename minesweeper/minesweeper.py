@@ -217,57 +217,41 @@ class MinesweeperAI():
                if they can be inferred from existing knowledge
         """
 
-        print("Start of add knowlege")
-        print(cell)
-        print(self.safes)
         self.moves_made.add(cell)
         self.mark_safe(cell)
 
         # going through the knowledge base and changing the sentences that hold the cell
 
-        for sentence in self.knowledge:
-            if cell in sentence.cells:
-                sentence.mark_safe(cell)
+        neighbors = set()
 
-        # problem is under this ______________________________________________________________
+        i, j = cell
+        for x in range(i - 1, i + 2):
+            for y in range(j - 1, j + 2):
+                if (x, y) == cell:
+                    continue
 
-        if count == 0:
+                if x >= 0 and y >= 0 and x < self.height and y < self.width:
+                    if (x, y) not in self.safes and (x, y) not in self.mines:
+                        neighbors.add((x, y))
+                    elif (x, y) in self.mines:
+                        count -= 1
 
-            i = cell[0]
-            j = cell[1]
-
-            # checking the cells around the cell that was clicked on problem is when i get a zero square itmarks a ton of random squares as safe
-
-            # checking i - 1
-            if i - 1 >= 0 and j - 1 >= 0:
-                self.mark_safe((i - 1, j - 1))
-            if i - 1 >= 0:
-                self.mark_safe((i - 1, j))
-            if i - 1 >= 0 and j + 1 < self.width:
-                self.mark_safe((i - 1, j + 1))
-
-            # checking i
-            if j - 1 >= 0:
-                self.mark_safe((i, j - 1))
-            if j + 1 < self.width:
-                self.mark_safe((i, j + 1))
-
-            # checking i + 1
-            if i + 1 < self.height and j - 1 >= 0:
-                self.mark_safe((i + 1, j - 1))
-            if i + 1 < self.height:
-                self.mark_safe((i + 1, j))
-            if i + 1 < self.height and j + 1 < self.width:
-                self.mark_safe((i + 1, j + 1))
+            
+        new_sentence = Sentence(neighbors, count)
+        if new_sentence not in self.knowledge:
+            self.knowledge.append(new_sentence)
                 
-                
-        Sentence_cells = set()
-
         # iterating through every neighboring empty cell and trying to make a new sentence
 
         emptyCells = self.findCloseEmptyCells(cell)
-        new_sentence = Sentence(emptyCells, count) 
-        self.knowledge.append(new_sentence)
+        cellsToAdd = set()
+        for cell in emptyCells:
+            if cell not in self.safes and cell not in self.mines:
+                cellsToAdd.add(cell)
+
+        if len(cellsToAdd) != 0:
+            new_sentence = Sentence(cellsToAdd, count) 
+            self.knowledge.append(new_sentence)
 
 
         # going through the knowledge base and checking each sentence for sure mines and safes
@@ -285,8 +269,16 @@ class MinesweeperAI():
             if len(sentence.cells) == 0:
                 self.knowledge.remove(sentence)
 
-        print("End of add knowlege")
-        print(self.knowledge)
+        self.makeInference()
+
+        self.makeConclusions()
+
+        self.doubleCheck()
+
+        print(cell)
+        print(self.safes)
+        print(self.mines)
+
         return
 
         raise NotImplementedError
@@ -318,33 +310,20 @@ class MinesweeperAI():
             2) are not known to be mines
         """
 
-        random_moves = []
-
-        # making a random move from neighbors of cells that have been clicked on
+        randomMoves = []
 
         if len(self.moves_made) != 0:
             for cell in self.moves_made:
-                random_moves += list(self.findCloseEmptyCells(cell))
-        else:
-            return (random.randint(0, self.height - 1), random.randint(0, self.width - 1))
-        print("Random moves")
-        print(random_moves)
+                randomMoves.append(self.findCloseEmptyCells(cell))
+                for nCell in randomMoves:
+                    if nCell in self.mines or nCell in self.moves_made:
+                        randomMoves.remove(nCell)
 
-        if len(random_moves) == 1:
-            return random_moves[0]
+            if len(randomMoves) != 0:
+                return random.choice(randomMoves)
+            
         
-        while True:
-            if((len(random_moves) - 1) == 0):
-                return random_moves[0]
-            random_int = random.randint(0, len(random_moves) - 1)
-            print("Random int")
-            print(random_int)
-            if random_moves[random_int] not in self.moves_made and random_moves[random_int] not in self.mines:
-                break
-            else:
-                random_moves.remove(random_moves[random_int])
-
-        return random_moves[random_int]
+        return (random.randint(0, self.height - 1), random.randint(0, self.width - 1))
 
         raise NotImplementedError
     
@@ -395,26 +374,70 @@ class MinesweeperAI():
         # i iterate through the knowledge base and make new sentences
         # i create a new sentence if there are common cells between two sentences
 
+        new_sentences = []
+
         for sentence1 in self.knowledge:
             for sentence2 in self.knowledge:
                 if sentence1 == sentence2:
                     continue
 
-                common_cells = sentence1.cells.intersection(sentence2.cells)
-                count = abs(sentence1.count - sentence2.count)
+                if sentence1.cells.issubset(sentence2.cells):
+                    cells = sentence2.cells - sentence1.cells
+                    count = sentence2.count - sentence1.count
+                    new_sentence = Sentence(cells, count)
+                    if new_sentence not in self.knowledge and new_sentence not in new_sentences:
+                        new_sentences.append(new_sentence)
 
-                # checking for mines
-                if len(common_cells) != 0:
-                    for cell in common_cells:
-                        if cell in self.mines:
-                            common_cells.remove(cell)
-                            count -= 1
+        self.knowledge.extend(new_sentences)
 
-                    # making the new sentence
-                    new_sentence = Sentence(common_cells, count)
-                    self.knowledge.append(new_sentence)
-                    self.makeConclusions()
+        # removing empty sentences
+        nonEmptySentences = []
+        for sentence in self.knowledge:
+            if len(sentence.cells) != 0:
+                nonEmptySentences.append(sentence)
+
+        self.knowledge = nonEmptySentences
+
+        
+        self.makeConclusions()
+
+
+    
+    def doubleCheck(self):
+        
+        # i iterate through the knowledge base and make new sentences
+
+        print("double check")
+
+        cellsToRemove = set()
+
+        for cell in self.mines:
+            if(cell in self.safes):
+                cellsToRemove.add(cell)
+
+        for cell in cellsToRemove:
+            self.safes.remove(cell)
+
+        newSentences = []
+        mines = set()
+        nonMines = set()
+
+        for sentence in self.knowledge:
+            for cell in sentence.cells:
+                if cell in self.mines:
+                    sentence.mark_mine(cell)
+                    mines.add(cell)
+                    continue
+
+                elif cell in self.safes:
+                    continue
+
+                else :
+                    nonMines.add(cell)
+
+
+            newSentences.append(Sentence(nonMines, sentence.count - len(mines)))
+
+        self.knowledge.extend(newSentences)
 
         return
-    
-    # current problem is that the game takes too long and freezes sometimes and make safe move is not working properly
