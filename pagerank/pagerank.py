@@ -48,6 +48,20 @@ def crawl(directory):
     return pages
 
 
+def checkSum(dictionary):
+    count = 0
+
+    for page in dictionary:
+        count += dictionary[page]
+        
+    if count == 1:
+        print("Sum is 1")
+    else:
+        print("Sum is not 1")
+        print(count)
+        print(dictionary)
+
+
 def transition_model(corpus, page, damping_factor):
     """
     Return a probability distribution over which page to visit next,
@@ -57,6 +71,33 @@ def transition_model(corpus, page, damping_factor):
     linked to by `page`. With probability `1 - damping_factor`, choose
     a link at random chosen from all pages in the corpus.
     """
+
+    distro = {}
+
+    # If the page has no links they all have the same rabdom chance
+
+    if len(corpus[page]) == 0:
+        for p in corpus:
+            distro[p] = 1 / len(corpus)
+        return distro
+    
+    linked = corpus[page]
+
+    if page in linked:
+        linked.remove(page)
+
+    linked = list(set(linked))
+
+    # i have to find all reachable pages in the corpus sio
+
+    for p in corpus:
+        if p in linked:
+            distro[p] = damping_factor / len(linked)
+        else:
+            distro[p] = (1 - damping_factor) / (len(corpus) - len(linked))
+            
+    return distro
+
     raise NotImplementedError
 
 
@@ -69,6 +110,28 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
+
+    pageRank = {}
+
+    randomInt = random.randint(0, len(corpus) - 1)
+
+    for page in corpus:
+        pageRank[page] = 0
+
+    sample = list(corpus.keys())[randomInt]
+
+    pageRank[sample] += 1
+
+    for i in range(n):
+        transition = transition_model(corpus, sample, damping_factor)
+        sample = random.choices(list(transition.keys()), weights=transition.values(), k=1)[0]
+        pageRank[sample] += 1
+
+    for page in pageRank:
+        pageRank[page] /= n
+
+    return pageRank
+
     raise NotImplementedError
 
 
@@ -81,8 +144,33 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
+
+    pageRank = {}
+    for p in corpus:
+        pageRank[p] = 1 / len(corpus)
+
+
+    while True:
+        newPageRank = {}
+        for p in corpus:
+            newPageRank[p] = (1 - damping_factor) / len(corpus)
+            for i in corpus:
+                if len(corpus[i]) == 0:
+                    newPageRank[p] += damping_factor * (pageRank[i] / len(corpus))
+                if p in corpus[i]:
+                    newPageRank[p] += damping_factor * (pageRank[i] / len(corpus[i]))
+
+        if all(abs(pageRank[p] - newPageRank[p]) < 0.001 for p in corpus):
+            break
+        else:
+            pageRank = newPageRank
+
+
+    return pageRank
     raise NotImplementedError
 
 
 if __name__ == "__main__":
     main()
+
+
