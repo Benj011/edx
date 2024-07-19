@@ -135,8 +135,6 @@ class CrosswordCreator():
         
         revised = False
         wordsToRemove = []
-
-        print("overlap", overlap)
             
 
         for wordX in self.domains[x]:
@@ -214,6 +212,28 @@ class CrosswordCreator():
         Return True if `assignment` is consistent (i.e., words fit in crossword
         puzzle without conflicting characters); return False otherwise.
         """
+
+
+        for variable1 in assignment:    
+            if len(assignment[variable1]) != variable1.length:
+                return False
+
+            for variable2 in assignment:
+                if variable1 == variable2:
+                    continue
+
+                if assignment[variable1] == assignment[variable2]:
+                    return False
+                
+                overlap = self.crossword.overlaps[variable1, variable2]
+
+                if overlap != None:
+                    if assignment[variable1][overlap[0]] != assignment[variable2][overlap[1]]:
+                        return False
+
+        
+        return True
+        
         raise NotImplementedError
 
     def order_domain_values(self, var, assignment):
@@ -223,7 +243,38 @@ class CrosswordCreator():
         The first value in the list, for example, should be the one
         that rules out the fewest values among the neighbors of `var`.
         """
+
+        rulingOut = []
+
+        print("var", var)
+
+
+        for word in self.crossword.words:
+            if len(word) != var.length:
+                continue
+
+            for variable in self.crossword.variables:
+                count = 0
+                if variable != var and variable not in assignment:
+                    if len(word) == variable.length:
+                        count += 1
+                    overlap = self.crossword.overlaps[var, variable]
+                    if overlap != None:
+                        for word2 in self.domains[variable]:
+                            if word[overlap[0]] != word2[overlap[1]]:
+                                count += 1
+                    rulingOut.append((word, count))
+                    
+
+
+        rulingOut.sort(key=lambda x: x[1])
+
+        sorted = [word for word, count in rulingOut]
+
+        return sorted                
+
         raise NotImplementedError
+
 
     def select_unassigned_variable(self, assignment):
         """
@@ -233,6 +284,37 @@ class CrosswordCreator():
         degree. If there is a tie, any of the tied variables are acceptable
         return values.
         """
+
+        variables = []
+
+        for variable in self.crossword.variables:
+            count = 0
+            degree = 0
+            if variable in assignment:
+                continue
+            
+
+            for word in self.domains[variable]:
+                if len(word) == variable.length:
+                    count += 1
+            
+            for neighbor in self.crossword.neighbors(variable):
+                if neighbor not in assignment and self.crossword.overlaps[variable, neighbor] != None:
+                    degree += 1
+            
+            variables.append((variable, count, degree))
+
+        variables.sort(key=lambda x: (x[1], -x[2]))
+                           
+        if variables == []:
+            return None
+        
+        final  = variables[0][0]
+        if final in assignment:
+            return None
+        
+        return final
+
         raise NotImplementedError
 
     def backtrack(self, assignment):
@@ -244,6 +326,22 @@ class CrosswordCreator():
 
         If no assignment is possible, return None.
         """
+
+        if self.assignment_complete(assignment):
+            return assignment
+        
+        variable = self.select_unassigned_variable(assignment)
+        for value in self.domains[variable]:
+            assignment[variable] = value
+            if self.consistent(assignment):
+                result = self.backtrack(assignment)
+                if result != None:
+                    return result
+            else:
+                assignment.pop(variable)
+            
+        return None 
+
         raise NotImplementedError
 
 
