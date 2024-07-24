@@ -65,6 +65,29 @@ def load_data(filename):
 
     f = open(filename, "r")
     reader = csv.reader(f)
+    next(reader)
+
+    for line in reader:
+        Eline = []
+        lLine = []
+        for index, item in enumerate(line):
+            if index == 10:
+                Eline.append()
+            if index in (0, 2, 4) or index > 9:
+                Eline.append(int(item))
+            else:
+                Eline.append(float(item))
+
+        if splitted[-1] == "TRUE":
+            lLine.append(1)
+        else:
+            lLine.append(0)
+
+        evidence.append(Eline)
+        labels.append(lLine)
+
+
+    return (evidence, labels)            
 
     raise NotImplementedError
 
