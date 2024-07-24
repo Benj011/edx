@@ -61,7 +61,7 @@ class Crossword():
         with open(words_file) as f:
             self.words = set(f.read().upper().splitlines())
 
-        # Determine variable set
+        # Determine wle set
         self.variables = set()
         for i in range(self.height):
             for j in range(self.width):
