@@ -31,6 +31,25 @@ def main():
     print(f"True Negative Rate: {100 * specificity:.2f}%")
 
 
+def map_month(month):
+    months = {
+        "jan": 0,
+        "feb": 1,
+        "mar": 2,
+        "apr": 3,
+        "may": 4,
+        "june": 5,
+        "jul": 6,
+        "aug": 7,
+        "sep": 8,
+        "oct": 9,
+        "nov": 10,
+        "dec": 11
+    }
+
+    return months[month.lower()]
+
+
 def load_data(filename):
     """
     Load shopping data from a CSV file `filename` and convert into a list of
@@ -72,13 +91,27 @@ def load_data(filename):
         lLine = []
         for index, item in enumerate(line):
             if index == 10:
-                Eline.append()
-            if index in (0, 2, 4) or index > 9:
+                Eline.append(map_month(item))
+
+            elif index == 15:
+                if item == "Returning_Visitor":
+                    Eline.append(1)
+                else:
+                    Eline.append(0)
+
+            elif index == 16:
+                if item == "TRUE":
+                    Eline.append(1)
+                else:
+                    Eline.append(0)
+
+            elif index in (0, 2, 4) or index > 9 and index < 17:
                 Eline.append(int(item))
             else:
-                Eline.append(float(item))
+                if index != 17:
+                    Eline.append(float(item))
 
-        if splitted[-1] == "TRUE":
+        if line[-1] == "TRUE":
             lLine.append(1)
         else:
             lLine.append(0)
@@ -86,8 +119,10 @@ def load_data(filename):
         evidence.append(Eline)
         labels.append(lLine)
 
-
-    return (evidence, labels)            
+    if len(evidence) == len(labels):
+        return (evidence, labels)
+    else:
+        raise ValueError("Length of evidence and labels do not match")          
 
     raise NotImplementedError
 
@@ -97,6 +132,17 @@ def train_model(evidence, labels):
     Given a list of evidence lists and a list of labels, return a
     fitted k-nearest neighbor model (k=1) trained on the data.
     """
+
+    if len(evidence) != len(labels):
+        raise ValueError("Length of evidence and labels do not match")
+
+    model = KNeighborsClassifier(n_neighbors=1)
+
+    trainX = evidence
+    trainY = labels
+    model.fit(trainX, trainY)
+    return model
+
     raise NotImplementedError
 
 
@@ -115,6 +161,28 @@ def evaluate(labels, predictions):
     representing the "true negative rate": the proportion of
     actual negative labels that were accurately identified.
     """
+
+    sensetivity = 0
+    specificity = 0
+    positive = 0
+    negative = 0
+
+
+    for i in range(len(labels)):
+        if labels[i] == 1:
+            positive += 1
+            if predictions[i] == 1:
+                sensetivity += 1
+        else:
+            negative += 1
+            if predictions[i] == 0:
+                specificity += 1
+    
+    sensetivity /= positive
+    specificity /= negative
+
+    return (sensetivity, specificity)
+
     raise NotImplementedError
 
 
