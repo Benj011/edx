@@ -58,6 +58,22 @@ def load_data(data_dir):
     be a list of integer labels, representing the categories for each of the
     corresponding `images`.
     """
+
+    images = []
+    labels = []
+
+    for i, name in enumerate(os.listdir(data_dir)):
+        path = os.path.join(data_dir, name)
+        for pic_name in os.listdir(path):
+            pic_path = os.path.join(path, pic_name)
+            pic = cv2.imread(pic_path)
+            pic = cv2.resize(pic, (IMG_WIDTH, IMG_HEIGHT))
+            images.append(pic)
+            labels.append(i)
+        
+
+
+    return tuple(images) , tuple(labels)
     raise NotImplementedError
 
 
