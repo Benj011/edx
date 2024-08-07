@@ -83,6 +83,18 @@ def get_model():
     `input_shape` of the first layer is `(IMG_WIDTH, IMG_HEIGHT, 3)`.
     The output layer should have `NUM_CATEGORIES` units, one for each category.
     """
+
+    model = tf.keras.models.Sequential()
+
+    # hidden layer and input 
+    model.add(tf.keras.layers.Dense(8, input_shape=(IMG_WIDTH, IMG_HEIGHT, 3), activation="relu"))
+
+    # output layer
+    model.add(tf.keras.layers.Dense(NUM_CATEGORIES, activation="sigmoid"))
+
+
+
+
     raise NotImplementedError
 
 
