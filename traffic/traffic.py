@@ -64,13 +64,14 @@ def load_data(data_dir):
 
     for i, name in enumerate(os.listdir(data_dir)):
         path = os.path.join(data_dir, name)
-        for pic_name in os.listdir(path):
-            pic_path = os.path.join(path, pic_name)
-            pic = cv2.imread(pic_path)
-            pic = cv2.resize(pic, (IMG_WIDTH, IMG_HEIGHT))
-            images.append(pic)
-            labels.append(i)
-        
+        if os.path.isdir(path):
+            for pic_name in os.listdir(path):
+                pic_path = os.path.join(path, pic_name)
+                pic = cv2.imread(pic_path)
+                pic = cv2.resize(pic, (IMG_WIDTH, IMG_HEIGHT))
+                images.append(pic)
+                labels.append(i)
+            
 
 
     return tuple(images) , tuple(labels)
@@ -84,16 +85,29 @@ def get_model():
     The output layer should have `NUM_CATEGORIES` units, one for each category.
     """
 
-    model = tf.keras.models.Sequential()
+    model = tf.keras.models.Sequential([
 
-    # hidden layer and input 
-    model.add(tf.keras.layers.Dense(8, input_shape=(IMG_WIDTH, IMG_HEIGHT, 3), activation="relu"))
+        tf.keras.layers.Conv2D(
+            32, (3,3), activation="relu", input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)
+        ),
 
-    # output layer
-    model.add(tf.keras.layers.Dense(NUM_CATEGORIES, activation="sigmoid"))
+        #  max pooling laer 2x2 pool size
+        tf.keras.layers.MaxPooling2D(pool_size=(2,2)),
+
+        tf.keras.layers.Flatten(), 
+
+        tf.keras.layers.Dense(128, activation="relu"),
+
+        
+        tf.keras.layers.Dropout(0.5),
 
 
+        tf.keras.layers.Dense(NUM_CATEGORIES, activation="softmax")
+    ])
 
+    model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
+
+    return model
 
     raise NotImplementedError
 
