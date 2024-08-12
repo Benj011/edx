@@ -96,7 +96,8 @@ def get_model():
 
         tf.keras.layers.Flatten(), 
 
-        tf.keras.layers.Dense(128, activation="relu"),
+        tf.keras.layers.Dense(400, activation="relu"),
+
 
         
         tf.keras.layers.Dropout(0.5),
