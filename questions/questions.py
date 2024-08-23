@@ -1,3 +1,4 @@
+import string
 import nltk
 import sys
 import os
@@ -54,11 +55,7 @@ def load_files(directory):
     directories = os.listdir(directory)
     files = {}
 
-    for dir in directories:
-        if dir == directory:
-            os.path.join(path, dir)
-            path = os.path.join(path, dir)
-            break
+    path = os.path.join(path, directory)
     
     directories = os.listdir(path)
     for file in directories:
@@ -76,6 +73,23 @@ def tokenize(document):
     Process document by coverting all words to lowercase, and removing any
     punctuation or English stopwords.
     """
+
+    path = os.path.join(os.getcwd(), document)
+    with open(path, 'r') as f:
+        text = f.read()
+
+    text = text.lower()
+    stopWords = set(nltk.corpus.stopwords.words("english"))
+    punctuation = set(string.punctuation)
+    words = nltk.word_tokenize(text)
+    goodWords = []
+    for word in words:
+        if word not in stopWords and word not in punctuation:
+            goodWords.append(word)
+
+    return goodWords
+
+
     raise NotImplementedError
 
 
