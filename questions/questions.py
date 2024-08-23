@@ -74,9 +74,7 @@ def tokenize(document):
     punctuation or English stopwords.
     """
 
-    path = os.path.join(os.getcwd(), document)
-    with open(path, 'r') as f:
-        text = f.read()
+    text = document
 
     text = text.lower()
     stopWords = set(nltk.corpus.stopwords.words("english"))
