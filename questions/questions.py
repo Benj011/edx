@@ -2,6 +2,7 @@ import string
 import nltk
 import sys
 import os
+import math
 
 FILE_MATCHES = 1
 SENTENCE_MATCHES = 1
@@ -99,6 +100,28 @@ def compute_idfs(documents):
     Any word that appears in at least one of the documents should be in the
     resulting dictionary.
     """
+
+    wordDict = {}
+
+    for document in documents:
+        wordFound = {}
+
+        for word in documents[document]:
+            if word in wordFound:
+                continue
+            wordFound[word] = True
+            if word not in wordDict:
+                wordDict[word] = 1
+            else:
+                wordDict[word] += 1
+
+    for word in wordDict:
+        wordDict[word] = len(documents) / wordDict[word]
+        wordDict[word] = math.log(wordDict[word])
+
+
+    return wordDict
+
     raise NotImplementedError
 
 
@@ -109,6 +132,26 @@ def top_files(query, files, idfs, n):
     to their IDF values), return a list of the filenames of the the `n` top
     files that match the query, ranked according to tf-idf.
     """
+
+    ranking = [None] * n
+    fileRanking = {}
+
+    for file in files:
+        tfidf = 0
+        for word in query:
+            wordTf = files[file].count(word)
+            tfidf += wordTf * idfs[word]
+        fileRanking[file] = tfidf
+
+    for i in range(n):
+        maxVal = max(fileRanking.values())
+        for file in fileRanking:
+            if fileRanking[file] == maxVal:
+                ranking[i] = file
+                del fileRanking[file]
+                break
+    return ranking
+
     raise NotImplementedError
 
 
@@ -120,6 +163,44 @@ def top_sentences(query, sentences, idfs, n):
     the query, ranked according to idf. If there are ties, preference should
     be given to sentences that have a higher query term density.
     """
+
+    sentenceScores = [] 
+
+    for sentence in sentences:
+        qWordCount = 0
+        idf = 0
+        wordCount = len(sentences[sentence])
+        
+        for word in query:
+            density = 0
+            if word in sentences[sentence]:
+                idf += idfs[word]
+                qWordCount += 1
+
+        if qWordCount == 0:
+            continue
+        else:
+            density = qWordCount / wordCount
+        
+        
+        
+        sentenceScores.append((sentence, idf, density))
+    
+        sentenceScores.sort(key=lambda x: (x[1], x[2]), reverse=True)
+
+    ranking = []
+    for i in range(n):
+        if i >= len(sentenceScores):
+            break
+        ranking.append(sentenceScores[i][0])
+
+        
+       
+    
+        
+    return ranking
+
+
     raise NotImplementedError
 
 
