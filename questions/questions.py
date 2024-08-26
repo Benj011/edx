@@ -164,49 +164,21 @@ def top_sentences(query, sentences, idfs, n):
     be given to sentences that have a higher query term density.
     """
 
-    sentenceScores = [] 
-
-    for sentence in sentences:
-        qWordCount = 0
+    sentenceList = []
+    for word in query:
         idf = 0
-        wordCount = len(sentences[sentence])
-        
-        for word in query:
-            density = 0
+        for sentence in sentences:
             if word in sentences[sentence]:
-                idf += idfs[word]
-                qWordCount += 1
+                idf += sentences[sentence].count(word) * idfs[word]
+        for sentence in sentences:
+            if word in sentences[sentence]:
+                queryDensity = sentences[sentence].count(word) / len(sentences[sentence])
+                sentenceList.append((sentence, idf, queryDensity))
 
-        if qWordCount == 0:
-            continue
-        else:
-            density = qWordCount / wordCount
-        
-        
-        
-        sentenceScores.append((sentence, idf, density))
-    
-    
-
-    ranking = [None] * n 
-    currentSentence = (0, 0, 0)
-    for i in range(n):
-        for sentence in sentenceScores:
-            if sentence[1] > currentSentence[1]:
-                currentSentence = sentence
-            elif sentence[1] == currentSentence[1]:
-                if sentence[2] > currentSentence[2]:
-                    currentSentence = sentence
-        
-        ranking[i] = currentSentence[0]
-        sentenceScores.remove(currentSentence)
-        currentSentence = (0, 0, 0)
-
-        
-       
-    
-        
-    return ranking
+    sentenceList.sort(key=lambda x: (x[1], x[2]), reverse=True)
+    for i in range(len(sentenceList)):
+        sentenceList[i] = sentenceList[i][0]
+    return sentenceList[:n]
 
 
     raise NotImplementedError
