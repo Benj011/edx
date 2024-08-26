@@ -186,13 +186,21 @@ def top_sentences(query, sentences, idfs, n):
         
         sentenceScores.append((sentence, idf, density))
     
-        sentenceScores.sort(key=lambda x: (x[1], x[2]), reverse=True)
+    
 
-    ranking = []
+    ranking = [None] * n 
+    currentSentence = (0, 0, 0)
     for i in range(n):
-        if i >= len(sentenceScores):
-            break
-        ranking.append(sentenceScores[i][0])
+        for sentence in sentenceScores:
+            if sentence[1] > currentSentence[1]:
+                currentSentence = sentence
+            elif sentence[1] == currentSentence[1]:
+                if sentence[2] > currentSentence[2]:
+                    currentSentence = sentence
+        
+        ranking[i] = currentSentence[0]
+        sentenceScores.remove(currentSentence)
+        currentSentence = (0, 0, 0)
 
         
        
